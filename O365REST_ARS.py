@@ -8,19 +8,21 @@ class main():
 
         self.site_url = 'https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/' 
 
-        self.ClientId = ''
-        self.ClientSecret = ''
-        self.tenant = ''
-        self.access_token = ''
-        self.auth_header = {}
+        self.ClientId = ""
+        self.ClientSecret = ""
+        self.tenant = ""
+        self.access_token = ""
         self.full_url_title = ""
+
+        self.auth_header = {}
+
         self.main()
 
     def main(self): 
 
         self.get_access_token()
         self.get_list_by_title("Test_list")
-        self.get_list_item(self.full_url_title)
+        self.get_list_items(self.full_url_title)
         #self.update_list_item(full_url)
         self.get_ListItemEntityTypeFullName(self.full_url_title)
 
@@ -30,12 +32,10 @@ class main():
         self.ClientId = secret_p.client["ClientId"]
         self.ClientSecret = quote(secret_p.client["ClientSecret"])
         self.tenant = "pwc"
-        test_url = 'https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists'
-
         url = 'https://' + self.tenant + '.sharepoint.com/_vti_bin/client.svc/'
 
+        test_url = 'https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists'
         
-
         headers = {'Authorization': 'Bearer'}
         response = requests.request("GET", url, headers=headers, verify=False)
 
@@ -52,7 +52,7 @@ class main():
         access_token_json = response.json() 
         self.access_token = access_token_json['access_token']
 
-        print(Back.BLUE + f"\naccess_token: {self.access_token}\n" + Style.RESET_ALL)
+        print(Back.BLUE + f"\nAccess_token: {self.access_token}\n" + Style.RESET_ALL)
 
         self.auth_header = {
             'Authorization': "Bearer " + self.access_token,
@@ -65,7 +65,7 @@ class main():
         self.full_url_title = self.site_url + "_api/web/lists/GetByTitle("+ "'" + title + "'" + ")"
         response = requests.get(self.full_url_title, headers=self.auth_header, verify=False)
 
-    def get_list_item(self, full_url):
+    def get_list_items(self, full_url):
         items = '/items'
         full_url = full_url + items
         
@@ -75,8 +75,8 @@ class main():
         print(response.json())
 
         field = json['d']['results'][0]['Rich_x0020_text']
-        print(field) #['0']['Versions']
-        print('Done')
+        print(field)
+        
     
     #def update_list_item(self, full_url):
         
@@ -89,7 +89,7 @@ class main():
         ListItemEntityTypeFullName = json['d']['ListItemEntityTypeFullName']
         print(ListItemEntityTypeFullName)
         
-        print('Done')
+        
 
 if __name__ == "__main__":
     main()
