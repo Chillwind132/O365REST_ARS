@@ -22,9 +22,10 @@ class main():
 
         self.get_access_token()
         self.get_list_by_title("Test_list")
-        self.get_list_items(self.full_url_title)
+        self.get_list_items("Test_list")
         #self.update_list_item(full_url)
-        self.get_ListItemEntityTypeFullName(self.full_url_title)
+        self.get_ListItemEntityTypeFullName("Test_list")
+        self.create_item_inList("Test_list","Test_name")
 
     def get_access_token(self):
         
@@ -62,12 +63,12 @@ class main():
 
     def get_list_by_title(self, title):
         
-        self.full_url_title = self.site_url + "_api/web/lists/GetByTitle("+ "'" + title + "'" + ")"
+        self.full_url_title = self.site_url + "_api/web/lists/GetByTitle("+ "'" + title + "'" + ")" # https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists/GetByTitle('Test_list')
         response = requests.get(self.full_url_title, headers=self.auth_header, verify=False)
 
-    def get_list_items(self, full_url):
+    def get_list_items(self, title):
         items = '/items'
-        full_url = full_url + items
+        full_url = self.site_url + "_api/web/lists/GetByTitle("+ "'" + title + "'" + ")" + items
         
         response = requests.get(full_url, headers=self.auth_header, verify=False)
         
@@ -77,19 +78,37 @@ class main():
         field = json['d']['results'][0]['Rich_x0020_text']
         print(field)
         
-    
+    def create_item_inList(self, list, item):
+
+        SP_item = self.get_ListItemEntityTypeFullName(list)
+        header = {
+        'Authorization': "Bearer " + self.access_token,
+        'Accept':'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose'
+        }
+        body = "{\r\n  \"__metadata\": {\r\n    \"type\": " + "'" + SP_item + "'" +  "\r\n  },\r\n  \"Title\": " + "'" + item + "'" + "\r\n}"
+        response = requests.post("https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists/GetByTitle(" + "'" + list + "'" + ")/items", data=body, headers=header, verify=False) 
+        print(response.text)
+        print(response.json)
+        print(response.status_code)
+        print("done")
+
+        
     #def update_list_item(self, full_url):
         
-    def get_ListItemEntityTypeFullName(self, full_url):
+    def get_ListItemEntityTypeFullName(self, title):
         select = '?$select=ListItemEntityTypeFullName'
-        full_url = full_url + select
+        full_url = full_url = self.site_url + "_api/web/lists/GetByTitle("+ "'" + title + "'" + ")" + select 
         
         response = requests.get(full_url, headers=self.auth_header, verify=False)
         json = response.json()
         ListItemEntityTypeFullName = json['d']['ListItemEntityTypeFullName']
-        print(ListItemEntityTypeFullName)
+        return ListItemEntityTypeFullName
+
         
         
 
 if __name__ == "__main__":
     main()
+    print("done")
+    
