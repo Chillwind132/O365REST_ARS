@@ -21,11 +21,13 @@ class main():
     def main(self): 
 
         self.get_access_token()
+
         self.get_list_by_title("Test_list")
         self.get_list_items("Test_list")
-        #self.update_list_item(full_url)
+        self.update_list_item("Test_list", "2")
         self.get_ListItemEntityTypeFullName("Test_list")
-        self.create_item_inList("Test_list","Test_name")
+        self.create_list_item("Test_list","Test_name")
+        self.delete_list_item("Test_list", "6")
 
     def get_access_token(self):
         
@@ -71,14 +73,10 @@ class main():
         full_url = self.site_url + "_api/web/lists/GetByTitle("+ "'" + title + "'" + ")" + items
         
         response = requests.get(full_url, headers=self.auth_header, verify=False)
-        
         json = response.json()
-        print(response.json())
-
-        field = json['d']['results'][0]['Rich_x0020_text']
-        print(field)
+        #field = json['d']['results'][0]['Rich_x0020_text']
         
-    def create_item_inList(self, list, item):
+    def create_list_item(self, list, item):
 
         SP_item = self.get_ListItemEntityTypeFullName(list)
         header = {
@@ -88,14 +86,33 @@ class main():
         }
         body = "{\r\n  \"__metadata\": {\r\n    \"type\": " + "'" + SP_item + "'" +  "\r\n  },\r\n  \"Title\": " + "'" + item + "'" + "\r\n}"
         response = requests.post("https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists/GetByTitle(" + "'" + list + "'" + ")/items", data=body, headers=header, verify=False) 
+       
+    def update_list_item(self, list, item_id):
+        SP_item = self.get_ListItemEntityTypeFullName(list)
+        header = {
+        'Authorization': "Bearer " + self.access_token,
+        'Accept':'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-HTTP-Method': 'MERGE',
+        'If-Match': '*'
+        }
+        body = "{\r\n  \"__metadata\": {\r\n    \"type\": " + "'" + SP_item + "'" +  "\r\n  },\r\n  \"Title\": " + "'" + "Title_updated" + "'" + "\r\n}"
+        response = requests.post("https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists/GetByTitle(" + "'" + list + "'" + ")/items(" + "'" + item_id + "'" + ")", data=body, headers=header, verify=False) 
         print(response.text)
         print(response.json)
         print(response.status_code)
         print("done")
+    
+    def delete_list_item(self, list, item_id):
+        header = {
+        'Authorization': "Bearer " + self.access_token,
+        'Accept':'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-HTTP-Method': 'DELETE',
+        'If-Match': '*'
+        }
+        response = requests.post("https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists/GetByTitle(" + "'" + list + "'" + ")/items(" + "'" + item_id + "'" + ")", headers=header, verify=False) 
 
-        
-    #def update_list_item(self, full_url):
-        
     def get_ListItemEntityTypeFullName(self, title):
         select = '?$select=ListItemEntityTypeFullName'
         full_url = full_url = self.site_url + "_api/web/lists/GetByTitle("+ "'" + title + "'" + ")" + select 
@@ -106,8 +123,6 @@ class main():
         return ListItemEntityTypeFullName
 
         
-        
-
 if __name__ == "__main__":
     main()
     print("done")
