@@ -1,4 +1,6 @@
 import requests
+import xmltodict
+import re
 import secret_p
 from urllib.parse import quote
 from colorama import Back, Fore, Style, init
@@ -22,12 +24,15 @@ class main():
 
         self.get_access_token()
 
-        self.get_list_by_title("Test_list")
-        self.get_list_items("Test_list")
-        self.update_list_item("Test_list", "2")
-        self.get_ListItemEntityTypeFullName("Test_list")
-        self.create_list_item("Test_list","Test_name")
-        self.delete_list_item("Test_list", "6")
+        #self.get_list_by_title("Test_list")
+        #self.get_list_items("Test_list")
+        #self.update_list_item("REST_TEST", "1")
+        #self.get_ListItemEntityTypeFullName("Test_list")
+        #self.create_list_item("REST_TEST","Test_name")
+        #self.delete_list_item("Test_list", "6")
+        #self.create_list("TEST_REST")
+        #self.get_list_guid("REST_TEST")
+        self.update_list("REST_TEST")
 
     def get_access_token(self):
         
@@ -84,11 +89,17 @@ class main():
         'Accept':'application/json;odata=verbose',
         'Content-Type': 'application/json;odata=verbose'
         }
-        body = "{\r\n  \"__metadata\": {\r\n    \"type\": " + "'" + SP_item + "'" +  "\r\n  },\r\n  \"Title\": " + "'" + item + "'" + "\r\n}"
-        response = requests.post("https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists/GetByTitle(" + "'" + list + "'" + ")/items", data=body, headers=header, verify=False) 
+        body = {
+          "__metadata": {
+            "type": SP_item
+          },
+          "Title": item
+        }
+        response = requests.post("https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists/GetByTitle(" + "'" + list + "'" + ")/items", json=body, headers=header, verify=False) 
        
     def update_list_item(self, list, item_id):
         SP_item = self.get_ListItemEntityTypeFullName(list)
+        title = "Item test title"
         header = {
         'Authorization': "Bearer " + self.access_token,
         'Accept':'application/json;odata=verbose',
@@ -96,8 +107,13 @@ class main():
         'X-HTTP-Method': 'MERGE',
         'If-Match': '*'
         }
-        body = "{\r\n  \"__metadata\": {\r\n    \"type\": " + "'" + SP_item + "'" +  "\r\n  },\r\n  \"Title\": " + "'" + "Title_updated" + "'" + "\r\n}"
-        response = requests.post("https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists/GetByTitle(" + "'" + list + "'" + ")/items(" + "'" + item_id + "'" + ")", data=body, headers=header, verify=False) 
+        body = {
+          "__metadata": {
+            "type": SP_item
+          },
+          "Title": title
+        }
+        response = requests.post("https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists/GetByTitle(" + "'" + list + "'" + ")/items(" + "'" + item_id + "'" + ")", json=body, headers=header, verify=False) 
         print(response.text)
         print(response.json)
         print(response.status_code)
@@ -115,13 +131,59 @@ class main():
 
     def get_ListItemEntityTypeFullName(self, title):
         select = '?$select=ListItemEntityTypeFullName'
-        full_url = full_url = self.site_url + "_api/web/lists/GetByTitle("+ "'" + title + "'" + ")" + select 
+        full_url = self.site_url + "_api/web/lists/GetByTitle("+ "'" + title + "'" + ")" + select 
         
         response = requests.get(full_url, headers=self.auth_header, verify=False)
         json = response.json()
         ListItemEntityTypeFullName = json['d']['ListItemEntityTypeFullName']
         return ListItemEntityTypeFullName
 
+    def create_list(self, list_title):
+        full_url = self.site_url + "_api/web/lists"
+        body = {
+          "__metadata": {
+            "type": "SP.List"
+          },
+          "AllowContentTypes": True,
+          "BaseTemplate": 100,
+         "ContentTypesEnabled": True,
+         "Description": "My list description",
+         "Title": "REST_TEST2"
+        }
+
+        response = requests.post(full_url, headers=self.auth_header, json=body, verify=False)
+
+        print(response.text)
+
+    def get_list_guid(self, list_title):
+        full_url = self.site_url + "_api/web/lists/getByTitle(" + "'" + list_title + "'" + ")/Id"
+        response = requests.get(full_url, headers=self.auth_header, verify=False)
+        GUID = response.text.split('"Id":"',1)[1].removesuffix('"}}') 
+        
+        print(GUID)
+        return GUID
+
+    def update_list(self, list_title):
+        header = {
+        'Authorization': "Bearer " + self.access_token,
+        'Accept':'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-HTTP-Method': 'MERGE',
+        'If-Match': '*'
+        }
+        list_guid = self.get_list_guid(list_title)
+        full_url = self.site_url + "_api/web/lists(guid" + "'" + list_guid + "'" +")"
+
+        body = {
+          "__metadata": {
+            "type": "SP.List"
+          },
+          "Title": "REST_UPDATED"
+        }
+
+        response = requests.post(full_url, headers=header, json=body, verify=False) 
+        print(response.text)
+        print('done')
         
 if __name__ == "__main__":
     main()
