@@ -32,7 +32,8 @@ class main():
         #self.delete_list_item("Test_list", "6")
         #self.create_list("TEST_REST")
         #self.get_list_guid("REST_TEST")
-        self.update_list("REST_TEST")
+        #self.update_list("REST_TEST")
+        self.create_field_list("REST_UPDATED")
 
     def get_access_token(self):
         
@@ -182,6 +183,23 @@ class main():
         }
 
         response = requests.post(full_url, headers=header, json=body, verify=False) 
+        print(response.text)
+        print('done')
+    
+    def create_field_list(self, list_title):
+        list_guid = self.get_list_guid(list_title)
+        full_url = self.site_url + "_api/web/lists(guid" + "'" + list_guid + "'" +")/Fields"
+        body = {
+          "__metadata": {
+            "type": "SP.Field"
+          },
+          "Title": "field title",
+          "FieldTypeKind": 2,
+          "Required": True,
+          "EnforceUniqueValues": False,
+          "StaticName": "field name"
+        }
+        response = requests.post(full_url, headers=self.auth_header, json=body, verify=False) 
         print(response.text)
         print('done')
         
