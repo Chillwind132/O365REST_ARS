@@ -36,6 +36,7 @@ class main():
         #self.create_field_list("REST_UPDATED")
         #self.create_folder()
         self.download_file('Shared%20Documents/Test_rest', 'dummy.pdf')
+
     def get_access_token(self):
         
         init()
@@ -116,10 +117,6 @@ class main():
           "Title": title
         }
         response = requests.post("https://pwceur.sharepoint.com/sites/GBL-xLoS-SPO-Playground/_api/web/lists/GetByTitle(" + "'" + list + "'" + ")/items(" + "'" + item_id + "'" + ")", json=body, headers=header, verify=False) 
-        print(response.text)
-        print(response.json)
-        print(response.status_code)
-        print("done")
     
     def delete_list_item(self, list, item_id):
         header = {
@@ -155,14 +152,11 @@ class main():
 
         response = requests.post(full_url, headers=self.auth_header, json=body, verify=False)
 
-        print(response.text)
-
     def get_list_guid(self, list_title):
         full_url = self.site_url + "_api/web/lists/getByTitle(" + "'" + list_title + "'" + ")/Id"
         response = requests.get(full_url, headers=self.auth_header, verify=False)
         GUID = response.text.split('"Id":"',1)[1].removesuffix('"}}') 
         
-        print(GUID)
         return GUID
 
     def update_list(self, list_title):
@@ -184,8 +178,6 @@ class main():
         }
 
         response = requests.post(full_url, headers=header, json=body, verify=False) 
-        print(response.text)
-        print('done')
     
     def create_field_list(self, list_title):
         list_guid = self.get_list_guid(list_title)
@@ -201,8 +193,6 @@ class main():
           "StaticName": "field name"
         }
         response = requests.post(full_url, headers=self.auth_header, json=body, verify=False) 
-        print(response.text)
-        print('done')
 
     def create_folder(self):
       full_url = self.site_url + "_api/web/folders"
@@ -213,18 +203,14 @@ class main():
         "ServerRelativeUrl": "Shared%20Documents/Test_rest" # sepcify document list
       }
       response = requests.post(full_url, headers=self.auth_header, json=body, verify=False) 
-      print(response.text)
-      print('done')
 
-    def download_file(self, folder_name,file_name):
+    def download_file(self, folder_name, file_name):
       full_url = self.site_url + "/_api/web/GetFolderByServerRelativeUrl(" + "'" + folder_name + "'" +")/Files(" + "'" + file_name + "'" +")/$value"
       header = {
       'Authorization': "Bearer " + self.access_token,
               }
       response = requests.get(full_url, headers=header, verify=False)
       open(file_name, 'wb').write(response.content)
-      print(response.text)
-      print('done')
 
 if __name__ == "__main__":
     main()
