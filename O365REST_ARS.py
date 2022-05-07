@@ -33,8 +33,9 @@ class main():
         #self.create_list("TEST_REST")
         #self.get_list_guid("REST_TEST")
         #self.update_list("REST_TEST")
-        self.create_field_list("REST_UPDATED")
-
+        #self.create_field_list("REST_UPDATED")
+        #self.create_folder()
+        self.download_file('Shared%20Documents/Test_rest', 'dummy.pdf')
     def get_access_token(self):
         
         init()
@@ -202,7 +203,29 @@ class main():
         response = requests.post(full_url, headers=self.auth_header, json=body, verify=False) 
         print(response.text)
         print('done')
-        
+
+    def create_folder(self):
+      full_url = self.site_url + "_api/web/folders"
+      body = {
+        "__metadata": {
+          "type": "SP.Folder"
+        },
+        "ServerRelativeUrl": "Shared%20Documents/Test_rest" # sepcify document list
+      }
+      response = requests.post(full_url, headers=self.auth_header, json=body, verify=False) 
+      print(response.text)
+      print('done')
+
+    def download_file(self, folder_name,file_name):
+      full_url = self.site_url + "/_api/web/GetFolderByServerRelativeUrl(" + "'" + folder_name + "'" +")/Files(" + "'" + file_name + "'" +")/$value"
+      header = {
+      'Authorization': "Bearer " + self.access_token,
+              }
+      response = requests.get(full_url, headers=header, verify=False)
+      open(file_name, 'wb').write(response.content)
+      print(response.text)
+      print('done')
+
 if __name__ == "__main__":
     main()
     print("done")
