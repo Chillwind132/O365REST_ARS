@@ -1,1 +1,3 @@
 # O365REST_ARS
+
+M365 SPO REST API template
